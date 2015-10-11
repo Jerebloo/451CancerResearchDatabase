@@ -1,0 +1,10 @@
+{
+  "name": "node-mysql",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "^4.10.6",
+    "jade": "^1.11.0",
+    "mysql": "^2.5.4",
+    "neo4j": "^1.1.1"
+  }
+}
