@@ -5,7 +5,7 @@ var http = require('http');
 var path = require('path');
 var jade= require('jade');
 
-var connection= require('./dbConnect');
+var db = require('./db');
 
 var app = express();
 
@@ -23,7 +23,23 @@ app.set('view engine', 'handlebars');
 //app.use(cookeParser());
 
 app.get('/', function( req, res ){
-  res.render('menu')
+  if ( !req.query.name || !req.query.district ){
+    return res.render('menu', {
+      error: {
+        message: 'Name and District are requried'
+      }
+    });
+  }
+
+  db.getCity( req.query.name, req.query.district, function( error, city ){
+    if ( error ){
+      return res.render('menu', {
+        error: error
+      });
+    }
+
+    res.render('menu', { city: city } );
+  });
 });
 
 http.createServer(app)
