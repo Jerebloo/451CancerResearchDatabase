@@ -19,14 +19,11 @@ app.engine('handlebars', require('express-handlebars')({
 
 app.set('view engine', 'handlebars');
 
-
-//app.use(cookeParser());
-
 app.get('/', function( req, res ){
   if ( !req.query.name || !req.query.district ){
     return res.render('menu', {
       error: {
-        message: 'Name and District are requried'
+        message: 'Name and District are required'
       }
     });
   }

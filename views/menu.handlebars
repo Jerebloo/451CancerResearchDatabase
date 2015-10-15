@@ -1,133 +1,183 @@
-<h1>{{city.Name}}, {{city.District}}</h1>
-<h2>Population: {{city.Population}}</h2>
-
-<script type="text/javascript" charset="utf-8">
-    var w = 960, h = 500;
-
-    var labelDistance = 0;
-
-    var vis = d3.select("body").append("svg:svg").attr("width", w).attr("height", h);
-
-    var nodes = [];
-    var labelAnchors = [];
-    var labelAnchorLinks = [];
-    var links = [];
-
-    //this for loop creates 30 nodes that are labeled node 1-29
-
-    for(var i = 0; i < 30; i++) {
-        var node = {
-            label : "node" + i
-        };
-        nodes.push(node);
-        labelAnchors.push({
-            node : node
-        });
-        labelAnchors.push({
-            node : node
-        });
-    };
+<!DOCTYPE html>
 
 
+<meta charset="utf-8">
 
-    for(var i = 0; i < nodes.length; i++) {
-        for(var j = 0; j < i; j++) {
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    link(href='tabStyles.css', rel='stylesheet', type='text/css')
+    <script type="text/javascript">
+        //<![CDATA[
 
-            if(Math.random() > .95)
-                links.push({
-                    source : i,
-                    target : j,
-                    weight : Math.random()
-                });
-        }
-        labelAnchorLinks.push({
-            source : i * 2,
-            target : i * 2 + 1,
-            weight : 1
-        });
-    };
+        var tabLinks = new Array();
+        var contentDivs = new Array();
 
-   var force = d3.layout.force().size([w, h]).nodes(nodes).links(links).gravity(1).linkDistance(50).charge(-3000).linkStrength(function(x) {
-        return x.weight * 10
-    });
+        function init() {
 
-
-    force.start();
-
-    var force2 = d3.layout.force().nodes(labelAnchors).links(labelAnchorLinks).gravity(0).linkDistance(0).linkStrength(8).charge(-100).size([w, h]);
-    force2.start();
-
-    var link = vis.selectAll("line.link").data(links).enter().append("svg:line").attr("class", "link").style("stroke", "#CCC");
-
-    var node = vis.selectAll("g.node").data(force.nodes()).enter().append("svg:g").attr("class", "node");
-    node.append("svg:circle").attr("r", 5).style("fill", "#555").style("stroke", "#FFF").style("stroke-width", 3);
-    node.call(force.drag);
-
-
-    var anchorLink = vis.selectAll("line.anchorLink").data(labelAnchorLinks).enter().append("svg:line").attr("class", "anchorLink").style("stroke", "#999")
-    anchorLink.append("Value");
-
-    var anchorNode = vis.selectAll("g.anchorNode").data(force2.nodes()).enter().append("svg:g").attr("class", "anchorNode");
-    anchorNode.append("svg:circle").attr("r", 0).style("fill", "#FFF");
-    anchorNode.append("svg:text").text(function(d, i) {
-        return i % 2 == 0 ? "" : d.node.label
-    }).style("fill", "#555").style("font-family", "Arial").style("font-size", 12);
-
-
-
-
-    var updateLink = function() {
-        this.attr("x1", function(d) {
-            return d.source.x;
-        }).attr("y1", function(d) {
-            return d.source.y;
-        }).attr("x2", function(d) {
-            return d.target.x;
-        }).attr("y2", function(d) {
-            return d.target.y;
-        });
-
-    }
-
-    var updateNode = function() {
-        this.attr("transform", function(d) {
-            return "translate(" + d.x + "," + d.y + ")";
-        });
-
-    }
-
-
-    force.on("tick", function() {
-
-        force2.start();
-
-        node.call(updateNode);
-
-        anchorNode.each(function(d, i) {
-            if(i % 2 == 0) {
-                d.x = d.node.x;
-                d.y = d.node.y;
-            } else {
-                var b = this.childNodes[1].getBBox();
-
-                var diffX = d.x - d.node.x;
-                var diffY = d.y - d.node.y;
-
-                var dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
-                var shiftX = b.width * (diffX - dist) / (dist * 2);
-                shiftX = Math.max(-b.width, Math.min(0, shiftX));
-                var shiftY = 5;
-                this.childNodes[1].setAttribute("transform", "translate(" + shiftX + "," + shiftY + ")");
+            // Grab the tab links and content divs from the page
+            var tabListItems = document.getElementById('tabs').childNodes;
+            for ( var i = 0; i < tabListItems.length; i++ ) {
+                if ( tabListItems[i].nodeName == "LI" ) {
+                    var tabLink = getFirstChildWithTagName( tabListItems[i], 'A' );
+                    var id = getHash( tabLink.getAttribute('href') );
+                    tabLinks[id] = tabLink;
+                    contentDivs[id] = document.getElementById( id );
+                }
             }
-        });
+
+            // Assign onclick events to the tab links, and
+            // highlight the first tab
+            var i = 0;
+
+            for ( var id in tabLinks ) {
+                tabLinks[id].onclick = showTab;
+                tabLinks[id].onfocus = function() { this.blur() };
+                if ( i == 0 ) tabLinks[id].className = 'selected';
+                i++;
+            }
+
+            // Hide all content divs except the first
+            var i = 0;
+
+            for ( var id in contentDivs ) {
+                if ( i != 0 ) contentDivs[id].className = 'tabContent hide';
+                i++;
+            }
+        }
+
+        function showTab() {
+            var selectedId = getHash( this.getAttribute('href') );
+
+            // Highlight the selected tab, and dim all others.
+            // Also show the selected content div, and hide all others.
+            for ( var id in contentDivs ) {
+                if ( id == selectedId ) {
+                    tabLinks[id].className = 'selected';
+                    contentDivs[id].className = 'tabContent';
+                } else {
+                    tabLinks[id].className = '';
+                    contentDivs[id].className = 'tabContent hide';
+                }
+            }
+
+            // Stop the browser following the link
+            return false;
+        }
+
+        function getFirstChildWithTagName( element, tagName ) {
+            for ( var i = 0; i < element.childNodes.length; i++ ) {
+                if ( element.childNodes[i].nodeName == tagName ) return element.childNodes[i];
+            }
+        }
+
+        function getHash( url ) {
+            var hashPos = url.lastIndexOf ( '#' );
+            return url.substring( hashPos + 1 );
+        }
+
+        //]]>
+    </script>
+</head>
+<body onload="init()">
+<h1>Cancer Database Name</h1>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam id metus eu magna aliquet dictum at non odio.
+    Duis consequat tincidunt orci maximus commodo. Nulla sed sem a sem viverra mollis vel ac dolor. Quisque quis
+    tortor nulla. Suspendisse nec felis dapibus, lacinia ligula ac, pretium enim. Nulla id nisi vitae ipsum efficitur
+    pharetra. Phasellus ultrices lorem vitae leo dapibus ullamcorper. Proin laoreet ante a tempus aliquam. Nulla tortor
+    arcu, aliquam eget vehicula sit amet, viverra vestibulum lectus. Morbi fermentum sapien sed imperdiet pulvinar. Sed
+    pharetra at sapien id hendrerit.
+    <br><br/>
+    Nullam facilisis mi fringilla tortor pulvinar ultrices. Donec sit amet porta dui.
+    Mauris facilisis nulla nec sem sodales tempus. Donec efficitur nulla quis urna laoreet,
+    eu ornare ex accumsan. Suspendisse condimentum quam sed sapien consequat, sit amet volutpat leo semper.
+    Integer et odio sed nisi tristique ornare non quis ligula. Cras cursus, purus quis pulvinar molestie, neque dui
+    commodo enim, vitae laoreet ex orci quis massa. Donec pellentesque nibh non efficitur pretium. Pellentesque ut euismod
+    tortor, vel porta ex. Phasellus ac purus ornare, fermentum eros a, sagittis augue. Quisque sit amet euismod quam, quis
+    venenatis sem. Quisque non enim nec ante rutrum semper at at orci.</p>
+<ul id="tabs">
+    <li><a href="#search">Search</a></li>
+    <li><a href="#analysis">Analysis</a></li>
+    <li><a href="#more">More</a></li>
+</ul>
+<div class="tabContent" id="search">
+    <h2>Search</h2>
+    <div>
+
+        <body>
+        <script src="http://www.d3plus.org/js/d3.js"></script>
+        <script src="http://www.d3plus.org/js/d3plus.js"></script>
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+
+        <style>
+            svg {
+                font-family: "Helvetica", "Arial", sans-serif;
+                height: 425px;
+                margin: 25px;
+                width: 900px;
+            }
+            .type {
+                fill: #888;
+                text-anchor: middle;
+            }
+            .shape {
+                fill: #eee;
+                stroke: #ccc;
+            }
+        </style>
+
+        <svg>
+
+            <circle class="shape" r="75px" cx="75px" cy="300px"></circle>
+            <text id="circleResize" class="wrap" y="225px" x="0px" font-size="12">
+                {{city.Name}}
+            </text>
+
+            <circle class="shape" r="75px" cx="475px" cy="300px"></circle>
+            <text id="circleResize2" class="wrap" y="225px" x="400px" font-size="12">
+                {{city.District}}
+            </text>
+
+            <line x1="150" y1="300" x2="400" y2="300" stroke="gray" stroke-width="5"  />
+
+            <DIV style="position: absolute; top:700px; left:300px; width:200px; height:25px">
+                {{city.Population}}
+            </DIV>
+
+        </svg>
 
 
-        anchorNode.call(updateNode);
+        <script>
 
-        link.call(updateLink);
-        anchorLink.call(updateLink);
+            // Wrap text in a circle, and size the text to fit.
+            d3plus.textwrap()
+                    .container(d3.select("#circleResize"))
+                    .resize(true)
+                    .draw();
+            d3plus.textwrap()
+                    .container(d3.select("#circleResize2"))
+                    .resize(true)
+                    .draw();
 
-    });
+        </script>
 
-</script>
+        </body>
+
+    </div>
+</div>
+<div class="tabContent" id="analysis">
+    <h2>Analysis</h2>
+    <div>
+        <p>This is the analysis tab.</p>
+    </div>
+</div>
+<div class="tabContent" id="More">
+    <h2>More</h2>
+    <div>
+        <p>This is another tab.</p>
+    </div>
+</div>
+</body>
+</html>
+
