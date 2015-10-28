@@ -1,0 +1,39 @@
+extends ./layout
+
+block title
+      link(rel='Stylesheet', type='text/css', href='https://cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css')
+      link(rel='Stylesheet', type='text/css', href='https://cdn.datatables.net/1.10.9/css/dataTables.bootstrap.min.css')
+      
+
+block content
+      form(method='POST', action='/search')
+            | search1: 
+            input(type='text', style="height:200px; width:500px; fontsize:14pt",  placeholder='Enter some input', name='search1')
+            //| 			search2: 
+            //input(type='text', placeholder='Units', name='search2')
+            input(type='submit', value='send')
+            
+      table(id="myTable" border="2")
+       thead
+        tr
+         th Order Date
+         th Region
+         th Rep
+         th Item
+         th Units
+         th Unit Cost
+         th Total
+       tbody
+        - each item in rows
+          tr
+            td=item.OderDate
+            td=item.Region
+            td=item.Rep
+            td=item.Item
+            td=item.Units
+            td=item.UnitCost
+            td=item.Total 
+      
+      script(src='https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js')
+      script(src='https://cdn.datatables.net/1.10.9/js/dataTables.bootstrap.min.js')
+      script(src='tbl.js')

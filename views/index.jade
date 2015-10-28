@@ -1,0 +1,17 @@
+extends ./layout.jade
+block title
+    title Login Page
+block content    
+  form(method='POST', action='/signin')
+    - if(typeof(errormessage)!=="undefined"){
+       span errormessage
+    - }
+      label Username
+      br
+      input(type='text', placeholder='Email', name='username')
+      br
+      label Password
+      br
+      input(type='text', placeholder='Password', name='password')
+      br
+      input(type='submit', value='login')
