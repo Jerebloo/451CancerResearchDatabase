@@ -5,9 +5,22 @@
 
 <html>
 <head>
-    <title></title>
+
+    <script src="http://jquery-1.11.3.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+
+<title></title>
     <meta charset="utf-8" />
-    link(href='tabStyles.css', rel='stylesheet', type='text/css')
+    <style>body { font-size: 80%; font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif; }
+    h1 {    text-align: center;}
+    ul#tabs { list-style-type: none; margin: 30px 0 0 0; padding: 0 0 0.3em 0; }
+    ul#tabs li { display: inline; }
+    ul#tabs li a { color: #42454a; background-color: #dedbde; border: 1px solid #c9c3ba; border-bottom: none; padding: 0.3em; text-decoration: none; }
+    ul#tabs li a:hover { background-color: #f1f0ee; }
+    ul#tabs li a.selected { color: #000; background-color: #f1f0ee; font-weight: bold; padding: 0.7em 0.3em 0.38em 0.3em; }
+    div.tabContent { border: 1px solid #c9c3ba; padding: 0.5em; background-color: #f1f0ee; }
+    div.tabContent.hide { display: none; }</style>
     <script type="text/javascript">
         //<![CDATA[
 
@@ -104,80 +117,101 @@
 <div class="tabContent" id="search">
     <h2>Search</h2>
     <div>
-
-        <body>
-        <script src="http://www.d3plus.org/js/d3.js"></script>
-        <script src="http://www.d3plus.org/js/d3plus.js"></script>
-        <script src="http://d3js.org/d3.v3.min.js"></script>
-
         <style>
-            svg {
-                font-family: "Helvetica", "Arial", sans-serif;
-                height: 425px;
-                margin: 25px;
-                width: 900px;
-            }
-            .type {
-                fill: #888;
-                text-anchor: middle;
-            }
-            .shape {
-                fill: #eee;
+
+            .link {
                 stroke: #ccc;
             }
+
+            .node text {
+                pointer-events: none;
+                font: 10px sans-serif;
+            }
+
         </style>
 
-        <svg>
-
-            <circle class="shape" r="75px" cx="75px" cy="300px"></circle>
-            <text id="circleResize" class="wrap" y="225px" x="0px" font-size="12">
-                {{city.Name}}
-            </text>
-
-            <circle class="shape" r="75px" cx="475px" cy="300px"></circle>
-            <text id="circleResize2" class="wrap" y="225px" x="400px" font-size="12">
-                {{city.District}}
-            </text>
-
-            <line x1="150" y1="300" x2="400" y2="300" stroke="gray" stroke-width="5"  />
-
-            <DIV style="position: absolute; top:700px; left:300px; width:200px; height:25px">
-                {{city.Population}}
-            </DIV>
-
-        </svg>
-
+        <body>
 
         <script>
 
-            // Wrap text in a circle, and size the text to fit.
-            d3plus.textwrap()
-                    .container(d3.select("#circleResize"))
-                    .resize(true)
-                    .draw();
-            d3plus.textwrap()
-                    .container(d3.select("#circleResize2"))
-                    .resize(true)
-                    .draw();
+            var newJson = $.getJSON('graph.json', function(data) {
+            });
+
+            var width = 960,
+                    height = 500
+
+            var svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+            var force = d3.layout.force()
+                    .gravity(.05)
+                    .distance(100)
+                    .charge(-100)
+                    .size([width, height]);
+
+            d3.json(newJson, function(error, json) {
+                if (error) throw error;
+
+                force
+                        .nodes(json.nodes)
+                        .links(json.links)
+                        .start();
+
+                var link = svg.selectAll(".link")
+                        .data(json.links)
+                        .enter().append("line")
+                        .attr("class", "link");
+
+                var node = svg.selectAll(".node")
+                        .data(json.nodes)
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .call(force.drag);
+
+                node.append("image")
+                        .attr("xlink:href", "https://github.com/favicon.ico")
+                        .attr("x", -8)
+                        .attr("y", -8)
+                        .attr("width", 16)
+                        .attr("height", 16);
+
+                node.append("text")
+                        .attr("dx", 12)
+                        .attr("dy", ".35em")
+                        .text(function(d) { return d.name });
+
+                force.on("tick", function() {
+                    link.attr("x1", function(d) { return d.source.x; })
+                            .attr("y1", function(d) { return d.source.y; })
+                            .attr("x2", function(d) { return d.target.x; })
+                            .attr("y2", function(d) { return d.target.y; });
+
+                    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                });
+            });
 
         </script>
 
         </body>
 
     </div>
+
 </div>
+
 <div class="tabContent" id="analysis">
     <h2>Analysis</h2>
     <div>
         <p>This is the analysis tab.</p>
     </div>
 </div>
-<div class="tabContent" id="More">
+<div class="tabContent" id="more">
     <h2>More</h2>
     <div>
         <p>This is another tab.</p>
     </div>
 </div>
+
 </body>
 </html>
 

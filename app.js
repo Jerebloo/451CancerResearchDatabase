@@ -9,34 +9,32 @@ var db = require('./db');
 
 var app = express();
 
-app.set('port', process.env.PORT || 3000);
+//app.set('port', process.env.PORT || 3000);
 
 app.set('views', path.join(__dirname, 'views'));
 
-app.engine('handlebars', require('express-handlebars')({
-  defaultLayout: 'layout'
-}));
+var parsedJSON = require('graph.json');
 
-app.set('view engine', 'handlebars');
+//app.engine('handlebars', require('express-handlebars')({
+//  defaultLayout: 'layout'
+//}));
 
-app.get('/', function( req, res ){
-  if ( !req.query.name || !req.query.district ){
-    return res.render('menu', {
-      error: {
-        message: 'Name and District are required'
-      }
-    });
+//app.set('view engine', 'handlebars');
+
+//var obj = require("/views/graph.json");
+
+fs = require('fs');
+
+
+fs.readFile('./views/force.html', function (err, html) {
+  if (err) {
+    throw err;
   }
-
-  db.getCity( req.query.name, req.query.district, function( error, city ){
-    if ( error ){
-      return res.render('menu', {
-        error: error
-      });
-    }
-
-    res.render('menu', { city: city } );
-  });
+  http.createServer(function(request, response) {
+    response.writeHeader(200, {"Content-Type": "text/html"});
+    response.write(html);
+    response.end();
+  }).listen(3000);
 });
 
 http.createServer(app)
