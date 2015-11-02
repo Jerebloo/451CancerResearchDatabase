@@ -5,6 +5,7 @@
     "express": "^4.10.6",
     "express-handlebars": "^2.0.1",
     "jade": "^1.11.0",
+    "jsdom": "^7.0.2",
     "mysql": "^2.5.4",
     "neo4j": "^1.1.1"
   }
